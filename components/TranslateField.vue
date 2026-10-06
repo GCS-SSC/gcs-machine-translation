@@ -63,7 +63,7 @@ onBeforeUnmount(close)
 <template>
   <div class="mt-1">
     <ExtensionButton
-      type="button" color="neutral" variant="link" size="xs" class="p-0" :label="label"
+      type="button" color="neutral" variant="outline" size="xs" class="font-medium normal-case tracking-normal" :label="label"
       :disabled="status === 'pending' || !context.source.getText().trim() || !context.source.isEditable() || !context.target.isEditable()" @click="begin" />
     <ExtensionModal :open="open" :title="t('title')" :description="t('notice')" @update:open="(value: boolean) => { if (!value) close() }">
       <template #body>

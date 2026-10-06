@@ -13,7 +13,9 @@ export const startTranslation = (text: string, direction: Direction, glossary: G
     workerUrl: `${base}/nmt/worker.js`,
     transformersUrl: `${base}/transformers/transformers.min.js`,
     wasmBaseUrl: `${base}/ort/`,
-    maxWorkers: 1, useBrowserCache: true, useFSCache: false, allowLocalModels: false
+    // Chrome exposes Cache Storage only on secure origins (including localhost).
+    // Plain HTTP LAN development must still be able to load models without it.
+    maxWorkers: 1, useBrowserCache: typeof globalThis.caches !== 'undefined', useFSCache: false, allowLocalModels: false
   })
   let rejectCancellation: (reason: Error) => void = () => {}
   const cancellation = new Promise<never>((_resolve, reject) => {

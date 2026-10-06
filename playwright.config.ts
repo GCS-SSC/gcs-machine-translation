@@ -9,6 +9,10 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
+  projects: [
+    { name: 'browser-cache' },
+    { name: 'without-cache-api', metadata: { withoutCacheApi: true } }
+  ],
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     browserName: 'chromium',

@@ -1,8 +1,13 @@
 import { test, expect } from '@playwright/test'
 
 // This browser suite loads the real nmt-enfr worker, Transformers.js and public language models.
-test('translates both directions with scoped glossaries through the real bilingual form', async ({ page }) => {
+test('translates both directions with scoped glossaries through the real bilingual form', async ({ page }, testInfo) => {
   test.setTimeout(360000)
+  // HTTP LAN origins lack Cache Storage. Exercise the extension's feature detection
+  // independently of the runner's loopback address, alongside the cached path.
+  if (testInfo.project.metadata.withoutCacheApi) {
+    await page.addInitScript(() => Object.defineProperty(globalThis, 'caches', { value: undefined, configurable: true }))
+  }
   page.on('console', message => { if (message.type() === 'error') console.error('Browser:', message.text()) })
   page.on('requestfailed', request => console.error('Request failed:', request.url(), request.failure()?.errorText))
   await page.addInitScript(() => {
@@ -17,6 +22,9 @@ test('translates both directions with scoped glossaries through the real bilingu
     }
   })
   await page.goto('/en/login')
+  if (testInfo.project.metadata.withoutCacheApi) {
+    expect(await page.evaluate(() => typeof globalThis.caches)).toBe('undefined')
+  }
   await page.getByLabel('Email').fill('root@example.com')
   await page.getByLabel('Password').fill('password123')
   await page.getByRole('button', { name: /^(login|connexion)$/i }).click()
@@ -77,7 +85,10 @@ test('translates both directions with scoped glossaries through the real bilingu
   await english.fill('The funding agreement supports communities.')
   await french.fill('Texte saisi manuellement')
   // The action belongs to the same UFormField as its source.
-  await editor.getByRole('button', { name: 'Translate to French', exact: true }).first().click()
+  const translateAction = editor.getByRole('button', { name: 'Translate to French', exact: true }).first()
+  await expect(translateAction).toHaveCSS('text-transform', 'none')
+  expect(await translateAction.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none')
+  await translateAction.click()
   const translation = page.getByRole('dialog', { name: 'Machine translation', exact: true })
   await expect(translation).toContainText('Check that it is accurate')
   await expect(french).toHaveValue('Texte saisi manuellement')

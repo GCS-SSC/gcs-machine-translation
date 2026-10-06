@@ -16,7 +16,7 @@ case. The reverse direction applies precedence by the French term. Both terms
 are mandatory; duplicate terms in either language are rejected. Glossaries have
 at most 500 entries per scope, with 250 characters per term.
 
-A small text button appears below editable, mounted bilingual input/textarea
+A small outlined text button appears below editable, mounted bilingual input/textarea
 pairs exposed through SDK 0.3.8’s `bilingual-field.after` capability. The host
 supplies the current source, target and a guarded update callback. Translation
 changes only the draft. Use the form’s regular Save action after reviewing it.
@@ -28,7 +28,9 @@ from their separately authorized Agency glossaries.
 The modal identifies the result as machine translation and shows a spinner
 while loading/translating. The first translation in each direction downloads
 public Xenova OPUS-MT model assets from Hugging Face through Transformers.js;
-subsequent requests reuse the browser model cache. Source text is processed in
+subsequent requests reuse the browser model cache on origins that support Cache
+Storage (HTTPS and localhost). Plain-HTTP LAN development works without that
+persistent model cache. Source text is processed in
 browser workers. The worker, Transformers.js and matching ONNX WebAssembly
 runtime are served from this extension’s packaged asset namespace, along with
 their license notices at `/extensions/gcs-machine-translation/licenses/`. Failed
