@@ -105,6 +105,25 @@ test('translates both directions with scoped glossaries through the real bilingu
   await expect(translation).toContainText('Translation copied')
   await expect(english).toHaveValue(/funding agreement/i)
   await translation.getByRole('button', { name: 'Close', exact: true }).last().click()
+
+  // Descriptions use CommonTextarea, which forwards the kebab-case model-value
+  // attribute through the host adapter rather than direct v-model's camel case.
+  const descriptionEn = editor.getByRole('textbox', { name: /Description \(EN\)/ })
+  const descriptionFr = editor.getByRole('textbox', { name: /Description \(FR\)/ })
+  await descriptionEn.fill('The funding agreement supports communities.')
+  await descriptionFr.fill('')
+  const descriptionAction = editor.getByRole('button', { name: 'Translate to French', exact: true }).last()
+  await expect(descriptionAction).toBeEnabled()
+  await descriptionAction.click()
+  await expect(translation).toContainText('Translation copied', { timeout: 240000 })
+  await translation.getByRole('button', { name: 'Close', exact: true }).last().click()
+  await expect(descriptionFr).toHaveValue(/entente de financement/i)
+  await descriptionEn.fill('')
+  await expect(descriptionAction).toBeDisabled()
+  await editor.getByRole('button', { name: 'Translate to English', exact: true }).last().click()
+  await expect(translation).toContainText('Translation copied', { timeout: 240000 })
+  await translation.getByRole('button', { name: 'Close', exact: true }).last().click()
+  await expect(descriptionEn).toHaveValue(/funding agreement/i)
   await editor.getByRole('button', { name: 'Cancel', exact: true }).click()
 
   await page.goto(`/fr/paiements-de-transfert/${stream.program_id}/volets/${stream.id}`)
