@@ -1,7 +1,7 @@
 import { defineGcsAuditOwnership, defineGcsExtension } from '@gcs-ssc/extensions'
 
 export default defineGcsExtension({
-  key: 'gcs-machine-translation', sdkVersion: '^0.3.8',
+  key: 'gcs-machine-translation', sdkVersion: '^0.3.9',
   name: { en: 'Machine translation', fr: 'Traduction automatique' },
   description: {
     en: 'Translate paired English and French fields with agency and stream glossaries.',

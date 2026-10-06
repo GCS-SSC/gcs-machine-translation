@@ -22,7 +22,7 @@ describe('scoped glossaries', () => {
   })
   it('owns its bilingual messages and literal placeholders', () => {
     for (const locale of ['en', 'fr']) for (const key of Object.keys(messages.en)) {
-      expect(translateGcsExtensionMessage(messages, locale, key as keyof typeof messages.en, { number: 1 })).toBeTruthy()
+      expect(translateGcsExtensionMessage(messages, locale, key as keyof typeof messages.en, { number: 1, term: 'grant' })).toBeTruthy()
     }
     expect(translateGcsExtensionMessage(messages, 'fr-CA', 'toEnglish')).toBe('Traduire en anglais')
   })

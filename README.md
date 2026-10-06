@@ -5,6 +5,11 @@ A GCS-SSC extension that translates English/French form pairs using
 `6bb66e0fcb45391e363d4da88a7329241c515c89`.
 
 Enable it under an Agency’s Extensions tab and configure the Agency glossary.
+Glossaries use the shared compact table with English/French columns and row
+edit/delete actions. Add term and Edit open a medium-sized draft modal; Save
+term validates both languages and uniqueness, while Cancel leaves the glossary
+unchanged. The table adapter requires SDK 0.3.9.
+
 Enable it on each Stream that should offer translation, optionally adding Stream
 terms. Stream terms override Agency terms by the source language term, ignoring
 case. The reverse direction applies precedence by the French term. Both terms

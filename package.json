@@ -12,7 +12,7 @@
     "test:e2e:managed": "bun scripts/test-e2e-managed.ts"
   },
   "dependencies": {
-    "@gcs-ssc/extensions": "^0.3.8",
+    "@gcs-ssc/extensions": "^0.3.9",
     "@huggingface/transformers": "4.1.0",
     "nmt-enfr": "github:omarmir/nmt-enfr#6bb66e0fcb45391e363d4da88a7329241c515c89",
     "onnxruntime-web": "1.26.0-dev.20260410-5e55544225",
