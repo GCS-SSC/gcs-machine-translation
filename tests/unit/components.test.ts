@@ -153,6 +153,7 @@ describe('glossary table and draft editor', () => {
     await button(wrapper, 'Save term').trigger('click')
     expect(wrapper.text()).toContain('Enter both languages')
     expect(wrapper.emitted('update:modelValue')).toBeUndefined()
+    expect(wrapper.findAllComponents({ name: 'UInput' }).map(input => input.vm.$attrs.lang)).toEqual(['en', 'fr'])
     await wrapper.findAll('input')[0]!.setValue(' grant ')
     await wrapper.findAll('input')[1]!.setValue(' subvention ')
     await button(wrapper, 'Save term').trigger('click')

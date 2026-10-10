@@ -101,10 +101,10 @@ const remove = (key: string) => {
           <ExtensionAlert v-if="attempted && !draftValidation.success" role="alert" color="error" :title="t('invalid')" />
           <div class="grid gap-4 sm:grid-cols-2">
             <ExtensionFormField name="english" :label="t('english')" :error="fieldError('english')" required>
-              <ExtensionInput v-model="draft.english" :maxlength="250" :disabled="disabled" autofocus @keydown.enter.prevent="save" />
+              <ExtensionInput v-model="draft.english" lang="en" :maxlength="250" :disabled="disabled" autofocus @keydown.enter.prevent="save" />
             </ExtensionFormField>
             <ExtensionFormField name="french" :label="t('french')" :error="fieldError('french')" required>
-              <ExtensionInput v-model="draft.french" :maxlength="250" :disabled="disabled" @keydown.enter.prevent="save" />
+              <ExtensionInput v-model="draft.french" lang="fr" :maxlength="250" :disabled="disabled" @keydown.enter.prevent="save" />
             </ExtensionFormField>
           </div>
         </div>

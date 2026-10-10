@@ -28,11 +28,11 @@ export const messages = defineGcsExtensionMessages({
     stale: 'Le formulaire a changé pendant la traduction. Votre texte a été conservé. Relancez la traduction.',
     done: 'La traduction a été copiée dans le champ de l’autre langue. Vérifiez son exactitude.',
     actions: 'Actions', edit: 'Modifier le terme {term}', editTitle: 'Modifier le terme', save: 'Enregistrer le terme', termHelp: 'Saisissez le terme anglais et son équivalent français.',
-    glossary: 'Glossaire', agencyHelp: 'Les termes de l’agence s’appliquent à tous ses champs de traduction activés.',
-    streamHelp: 'Les termes du volet complètent le glossaire de l’agence. Un terme correspondant du volet a priorité dans le sens de traduction.',
+    glossary: 'Glossaire', agencyHelp: 'Les termes de l’organisme s’appliquent à tous ses champs de traduction activés.',
+    streamHelp: 'Les termes du volet complètent le glossaire de l’organisme. Un terme correspondant du volet a priorité dans le sens de traduction.',
     add: 'Ajouter un terme', remove: 'Supprimer le terme {number}', english: 'Terme anglais', french: 'Terme français',
     empty: 'Aucun terme dans le glossaire. La traduction utilisera le vocabulaire du modèle linguistique.',
     invalid: 'Saisissez les deux langues pour chaque terme (maximum de 500 termes de 250 caractères chacun). Les termes doivent être uniques dans chaque langue.',
-    chooseAgency: 'Choisir un glossaire d’agence', agencyHelpTranslation: 'Ce promoteur est partagé entre les agences. Choisissez le glossaire d’agence à utiliser.'
+    chooseAgency: 'Choisir un glossaire d’organisme', agencyHelpTranslation: 'Ce promoteur est partagé entre les organismes. Choisissez le glossaire d’organisme à utiliser.'
   }
 })
