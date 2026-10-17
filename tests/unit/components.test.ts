@@ -217,6 +217,17 @@ describe('glossary table and draft editor', () => {
     expect(wrapper.findAll('input')).toHaveLength(0)
     wrapper.unmount()
   })
+  it('tags authored terms and updates action names with the interface language', async () => {
+    const wrapper = mount(GlossaryConfig, { props: { modelValue: { glossary: [{ english: 'grant', french: 'subvention' }] } } })
+    expect(wrapper.get('span[lang="en"]').text()).toBe('grant')
+    expect(wrapper.get('span[lang="fr"]').text()).toBe('subvention')
+    expect(wrapper.find('button[aria-label="Edit term grant"]').exists()).toBe(true)
+    locale.value = 'fr-CA'
+    await flushPromises()
+    expect(wrapper.find('button[aria-label="Modifier le terme subvention"]').exists()).toBe(true)
+    expect(wrapper.find('button[aria-label="Supprimer le terme 1"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
   it('allows editing at the term limit while preventing another addition', async () => {
     const glossary = Array.from({ length: 500 }, (_, index) => ({ english: `term ${index}`, french: `terme ${index}` }))
     const wrapper = mount(GlossaryConfig, { props: { modelValue: { glossary } } })

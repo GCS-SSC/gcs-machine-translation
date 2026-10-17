@@ -10,7 +10,7 @@ import { messages } from '../i18n/messages'
 
 const model = defineModel<GcsExtensionJsonConfig>({ default: () => ({}) })
 const { streamId, disabled = false } = defineProps<{ streamId?: string; disabled?: boolean }>()
-const { t } = useExtensionI18n(messages)
+const { t, locale } = useExtensionI18n(messages)
 type Term = { english: string; french: string }
 type Row = Term & { key: string }
 const rows: Ref<Row[]> = ref([])
@@ -88,9 +88,15 @@ const remove = (key: string) => {
       <ExtensionButton type="button" icon="i-lucide-plus" variant="outline" :label="t('add')" :disabled="disabled || rows.length >= 500" @click="edit()" />
     </div>
     <ExtensionCompactTable :data="rows" :columns="columns" :empty-text="t('empty')" :ui="{ td: 'align-top', th: 'whitespace-nowrap' }">
+      <template #english-cell="{ row }">
+        <span lang="en">{{ row.original.english }}</span>
+      </template>
+      <template #french-cell="{ row }">
+        <span lang="fr">{{ row.original.french }}</span>
+      </template>
       <template #actions-cell="{ row }">
         <div class="flex justify-end gap-2">
-          <ExtensionButton type="button" color="neutral" variant="ghost" size="sm" icon="i-lucide-pencil" :aria-label="t('edit', { term: row.original.english })" :disabled="disabled" @click="edit(row.original)" />
+          <ExtensionButton type="button" color="neutral" variant="ghost" size="sm" icon="i-lucide-pencil" :aria-label="t('edit', { term: locale === 'fr' ? row.original.french : row.original.english })" :disabled="disabled" @click="edit(row.original)" />
           <ExtensionButton type="button" color="error" variant="ghost" size="sm" icon="i-lucide-trash" :aria-label="t('remove', { number: row.index + 1 })" :disabled="disabled" @click="remove(row.original.key)" />
         </div>
       </template>
