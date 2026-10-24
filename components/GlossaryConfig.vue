@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/* eslint-disable jsdoc/require-jsdoc -- Local UI actions use the public SDK contracts. */
+
 import { computed, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { nanoid } from 'nanoid'
@@ -79,7 +79,7 @@ const remove = (key: string) => {
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4" data-field-scope="extension.gcs-machine-translation.glossary-config">
     <p class="text-sm text-muted">
       {{ t(streamId ? 'streamHelp' : 'agencyHelp') }}
     </p>
