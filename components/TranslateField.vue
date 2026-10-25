@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/* eslint-disable jsdoc/require-jsdoc -- Local UI actions use the public SDK contracts. */
+
 import { computed, onBeforeUnmount, ref } from 'vue'
 import type { Ref } from 'vue'
 import type { GcsBilingualFieldExtensionContext, GcsExtensionJsonConfig } from '@gcs-ssc/extensions'
@@ -61,7 +61,7 @@ onBeforeUnmount(close)
 </script>
 
 <template>
-  <div class="mt-1">
+  <div class="mt-1" data-field-scope="extension.gcs-machine-translation.translate-field">
     <ExtensionButton
       type="button" color="neutral" variant="outline" size="xs" class="font-medium normal-case tracking-normal" :label="label"
       :disabled="status === 'pending' || !context.source.getText().trim() || !context.source.isEditable() || !context.target.isEditable()" @click="begin" />
