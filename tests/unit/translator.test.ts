@@ -39,4 +39,22 @@ describe('library worker lifecycle', () => {
     expect(cancel).toHaveBeenCalled()
     expect(dispose).toHaveBeenCalled()
   })
+  it('releases a cancelled worker exactly once and ignores repeated cancellation', async () => {
+    translate.mockReturnValue(new Promise(() => {}))
+    const operation = startTranslation('Hello', 'en-fr', [])
+    operation.cancel()
+    operation.cancel()
+    await expect(operation.result).rejects.toThrow('cancelled')
+    expect(cancel).toHaveBeenCalledTimes(1)
+    expect(dispose).toHaveBeenCalledTimes(1)
+  })
+  it('does not cancel a worker after its result settled', async () => {
+    translate.mockResolvedValue({ text: 'Bonjour' })
+    const operation = startTranslation('Hello', 'en-fr', [])
+    await operation.result
+    operation.cancel()
+    expect(cancel).not.toHaveBeenCalled()
+    expect(dispose).toHaveBeenCalledTimes(1)
+  })
+
 })

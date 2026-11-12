@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, shallowRef, watch } from 'vue'
 import type { Ref } from 'vue'
 import type { GcsBilingualFieldExtensionContext, GcsExtensionJsonConfig } from '@gcs-ssc/extensions'
 import { ExtensionAlert, ExtensionButton, ExtensionFormField, ExtensionIcon, ExtensionModal, ExtensionSelect, useExtensionI18n } from '@gcs-ssc/extensions/ui'
@@ -10,54 +10,58 @@ import { messages } from '../i18n/messages'
 
 const { context, config } = defineProps<{ context: GcsBilingualFieldExtensionContext; config: GcsExtensionJsonConfig }>()
 const { t, locale } = useExtensionI18n(messages)
-const open: Ref<boolean> = ref(false)
-const status: Ref<'idle' | 'pending' | 'done' | 'failed' | 'stale'> = ref('idle')
-const agencyId: Ref<string> = ref('')
-const needsOverwrite: Ref<boolean> = ref(false)
-let session: ReturnType<typeof startTranslation> | null = null
-let generation = 0
-let snapshot: { context: GcsBilingualFieldExtensionContext; source: string; target: string } | null = null
+type Snapshot = { context: GcsBilingualFieldExtensionContext; source: string; target: string }
+type Action = { kind: 'idle' | 'done' | 'failed' | 'stale' } | { kind: 'pending'; session: ReturnType<typeof startTranslation> }
+type Dialog = { kind: 'closed' | 'disposed' } | { kind: 'open'; snapshot: Snapshot; agencyId: string; action: Action }
+const dialog: Ref<Dialog> = shallowRef({ kind: 'closed' })
+const open = computed(() => dialog.value.kind === 'open')
+const status = computed(() => dialog.value.kind === 'open' ? dialog.value.action.kind : 'idle')
+const needsOverwrite = computed(() => dialog.value.kind === 'open' && Boolean(dialog.value.snapshot.target.trim()))
+const agencyId = computed({
+  get: () => dialog.value.kind === 'open' ? dialog.value.agencyId : '',
+  set: (value: string) => { if (dialog.value.kind === 'open') dialog.value = { ...dialog.value, agencyId: value } }
+})
 const label = computed(() => t(context.target.locale === 'fr' ? 'toFrench' : 'toEnglish'))
 const agencies = computed(() => context.agencies ?? [])
 const agencyOptions = computed(() => agencies.value.map(agency => ({ value: agency.agencyId, label: locale.value.startsWith('fr') ? agency.nameFr : agency.nameEn })))
 const close = () => {
-  generation += 1
-  session?.cancel()
-  session = null
-  snapshot = null
-  status.value = 'idle'
-  open.value = false
+  if (dialog.value.kind === 'disposed') return
+  if (dialog.value.kind === 'open' && dialog.value.action.kind === 'pending') dialog.value.action.session.cancel()
+  dialog.value = { kind: 'closed' }
 }
 const translate = async () => {
-  if (!snapshot || status.value === 'pending' || (agencies.value.length > 0 && !agencyId.value)) return
-  const active = snapshot
-  const request = ++generation
-  status.value = 'pending'
+  const active = dialog.value
+  if (active.kind !== 'open' || active.action.kind === 'pending' || (agencies.value.length > 0 && !active.agencyId)) return
   try {
-    const direction = active.context.source.locale === 'en' ? 'en-fr' : 'fr-en'
-    const selected = agencies.value.find(agency => agency.agencyId === agencyId.value)
+    const direction = active.snapshot.context.source.locale === 'en' ? 'en-fr' : 'fr-en'
+    const selected = agencies.value.find(agency => agency.agencyId === active.agencyId)
     const runtime = selected?.config ?? config
     const glossary = composeGlossary(runtime.agency, runtime.stream, direction)
-    session = startTranslation(active.source, direction, glossary)
-    const result = await session.result
-    if (request !== generation) return
-    status.value = active.context.applyTranslation(result.text, { source: active.source, target: active.target }) ? 'done' : 'stale'
+    const session = startTranslation(active.snapshot.source, direction, glossary)
+    const pending: Dialog = { ...active, action: { kind: 'pending', session } }
+    dialog.value = pending
+    try {
+      const result = await session.result
+      if (dialog.value !== pending) return
+      const snapshot = active.snapshot
+      const kind = snapshot.context.applyTranslation(result.text, { source: snapshot.source, target: snapshot.target }) ? 'done' : 'stale'
+      dialog.value = { ...active, action: { kind } }
+    } catch {
+      if (dialog.value === pending) dialog.value = { ...active, action: { kind: 'failed' } }
+    }
   } catch {
-    if (request === generation) status.value = 'failed'
-  } finally {
-    if (request === generation) session = null
+    if (dialog.value === active) dialog.value = { ...active, action: { kind: 'failed' } }
   }
 }
 const begin = () => {
-  if (!context.source.isEditable() || !context.target.isEditable() || !context.source.getText().trim()) return
-  snapshot = { context, source: context.source.getText(), target: context.target.getText() }
-  needsOverwrite.value = Boolean(snapshot.target.trim())
-  agencyId.value = agencies.value.length === 1 ? agencies.value[0]!.agencyId : ''
-  status.value = 'idle'
-  open.value = true
+  if (dialog.value.kind === 'disposed' || !context.source.isEditable() || !context.target.isEditable() || !context.source.getText().trim()) return
+  close()
+  const snapshot = { context, source: context.source.getText(), target: context.target.getText() }
+  dialog.value = { kind: 'open', snapshot, agencyId: agencies.value.length === 1 ? agencies.value[0]!.agencyId : '', action: { kind: 'idle' } }
   if (!needsOverwrite.value && agencies.value.length <= 1) void translate()
 }
-onBeforeUnmount(close)
+watch(() => context, close, { flush: 'sync' })
+onBeforeUnmount(() => { close(); dialog.value = { kind: 'disposed' } })
 </script>
 
 <template>

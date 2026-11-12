@@ -14,14 +14,14 @@ const { t, locale } = useExtensionI18n(messages)
 type Term = { english: string; french: string }
 type Row = Term & { key: string }
 const rows: Ref<Row[]> = ref([])
-const draft: Ref<Term | null> = ref(null)
-const editingKey: Ref<string | null> = ref(null)
-const attempted = ref(false)
+type Editor = { kind: 'closed' } | { kind: 'create'; draft: Term; attempted: boolean } | { kind: 'edit'; key: string; draft: Term; attempted: boolean }
+const editor: Ref<Editor> = ref({ kind: 'closed' })
+const draft = computed(() => editor.value.kind === 'closed' ? null : editor.value.draft)
+const editingKey = computed(() => editor.value.kind === 'edit' ? editor.value.key : null)
+const attempted = computed(() => editor.value.kind !== 'closed' && editor.value.attempted)
 let lastEmitted = ''
 const close = () => {
-  draft.value = null
-  editingKey.value = null
-  attempted.value = false
+  editor.value = { kind: 'closed' }
 }
 watch(model, value => {
   const ownEcho = JSON.stringify(value) === lastEmitted
@@ -55,14 +55,14 @@ const publish = () => {
 }
 const edit = (row?: Row) => {
   if (disabled || (!row && rows.value.length >= 500)) return
-  editingKey.value = row?.key ?? null
-  draft.value = { english: row?.english ?? '', french: row?.french ?? '' }
-  attempted.value = false
+  editor.value = row
+    ? { kind: 'edit', key: row.key, draft: { english: row.english, french: row.french }, attempted: false }
+    : { kind: 'create', draft: { english: '', french: '' }, attempted: false }
 }
 const save = () => {
   if (disabled || !draft.value) return
   if (draftIndex.value < 0) { close(); return }
-  attempted.value = true
+  if (editor.value.kind !== 'closed') editor.value.attempted = true
   const result = draftValidation.value
   if (!result.success) return
   const entry = result.data.glossary[draftIndex.value]!

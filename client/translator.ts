@@ -17,15 +17,23 @@ export const startTranslation = (text: string, direction: Direction, glossary: G
     // Plain HTTP LAN development must still be able to load models without it.
     maxWorkers: 1, useBrowserCache: typeof globalThis.caches !== 'undefined', useFSCache: false, allowLocalModels: false
   })
-  let rejectCancellation: (reason: Error) => void = () => {}
+  type WorkerState = { kind: 'running'; rejectCancellation: (reason: Error) => void } | { kind: 'settled' | 'cancelled' }
+  let state: WorkerState = { kind: 'settled' }
   const cancellation = new Promise<never>((_resolve, reject) => {
-    rejectCancellation = reject
+    state = { kind: 'running', rejectCancellation: reject }
   })
   return {
-    result: Promise.race([client.translateText(text, { direction, glossary }), cancellation]).finally(() => client.dispose()),
+    result: Promise.race([client.translateText(text, { direction, glossary }), cancellation]).finally(() => {
+      if (state.kind !== 'running') return
+      state = { kind: 'settled' }
+      client.dispose()
+    }),
     /** Cancels translation and releases the worker even during model loading. */
     cancel: () => {
-      rejectCancellation(new Error('Translation cancelled'))
+      if (state.kind !== 'running') return
+      const active = state
+      state = { kind: 'cancelled' }
+      active.rejectCancellation(new Error('Translation cancelled'))
       client.cancel()
       client.dispose()
     }
