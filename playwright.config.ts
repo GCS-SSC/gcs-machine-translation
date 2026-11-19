@@ -4,6 +4,8 @@ import { defineConfig } from '@playwright/test'
 const chromiumExecutablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH
   || ['/usr/bin/chromium', '/usr/bin/chromium-browser'].find(path => existsSync(path))
 
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000'
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -14,7 +16,8 @@ export default defineConfig({
     { name: 'without-cache-api', metadata: { withoutCacheApi: true } }
   ],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    baseURL,
+    extraHTTPHeaders: { Origin: new URL(baseURL).origin },
     browserName: 'chromium',
     executablePath: chromiumExecutablePath,
     channel: chromiumExecutablePath ? undefined : process.env.PLAYWRIGHT_CHANNEL || 'chrome',
